@@ -43,13 +43,6 @@ class VC:
             else 0.5,
             "__type__": "update",
         }
-        to_return_protect1 = {
-            "visible": self.if_f0 != 0,
-            "value": to_return_protect[1]
-            if self.if_f0 != 0 and to_return_protect
-            else 0.33,
-            "__type__": "update",
-        }
 
         if sid == "" or sid == []:
             if self.hubert_model is not None:  # 考虑到轮询, 需要加个判断看是否 sid 是由有模型切换到无模型的
@@ -85,11 +78,6 @@ class VC:
                 {
                     "visible": True,
                     "value": to_return_protect0,
-                    "__type__": "update",
-                },
-                {
-                    "visible": True,
-                    "value": to_return_protect1,
                     "__type__": "update",
                 },
                 "",
@@ -133,7 +121,6 @@ class VC:
             (
                 {"visible": True, "maximum": n_spk, "__type__": "update"},
                 to_return_protect0,
-                to_return_protect1,
                 index,
                 index,
             )
