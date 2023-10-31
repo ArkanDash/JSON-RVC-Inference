@@ -12,8 +12,7 @@ pyworld==0.3.2
 soundfile>=0.12.1
 praat-parselmouth>=0.4.2
 httpx
-onnxruntime; sys_platform == 'darwin'
-onnxruntime-gpu; sys_platform != 'darwin'
+onnxruntime
 python-dotenv>=1.0.0
 fastapi==0.88
 tensorboard
@@ -23,7 +22,4 @@ asyncio
 demucs
 edge-tts
 yt_dlp
-rarfile
-mega.py
-gdown
 av
