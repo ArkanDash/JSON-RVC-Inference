@@ -66,13 +66,13 @@ def download_model(character):
                 subprocess.run(['wget', '-P', temp_path, item[1]])
                 subprocess.run(['wget', '-O', os.path.join(covers_path, cover_filename), item[2]])
 
-    items_in_temp = os.listdir(temp_path)
-    if len(items_in_temp) == 1 and os.path.isdir(os.path.join(temp_path, items_in_temp[0])):
-        temp_path = os.path.join(temp_path, items_in_temp[0])
-
     if temp_path.endswith('.zip'):
         with zipfile.ZipFile(temp_path, 'r') as zip_ref:
             zip_ref.extractall(temp_path)
+
+    items_in_temp = os.listdir(temp_path)
+    if len(items_in_temp) == 1 and os.path.isdir(os.path.join(temp_path, items_in_temp[0])):
+        temp_path = os.path.join(temp_path, items_in_temp[0])
 
     for root, dirs, files in os.walk(temp_path):
         for file in files:
@@ -83,15 +83,14 @@ def download_model(character):
     
 def change_choices():
     names = []
-    for name in os.listdir(weight_root):
+    index_paths = []
+    for name in os.listdir(weights_path):
         if name.endswith(".pth"):
             names.append(name)
-    index_paths = []
-    for root, dirs, files in os.walk(index_root, topdown=False):
-        for name in files:
-            if name.endswith(".index") and "trained" not in name:
-                index_paths.append("%s/%s" % (root, name))
-    return {"choices": sorted(names), "__type__": "update"}, {
+    for name in os.listdir(indexs_path):
+        if name.endswith(".index"):
+            index_paths.append(name)
+    return { "choices": sorted(names), "__type__": "update"}, {
         "choices": sorted(index_paths),
         "__type__": "update",
     }
