@@ -40,13 +40,13 @@ with open(json_files[0], 'r') as file:
     data = json.load(file)
 modelList = data["list"]
 names = []
-index_paths = []
+indexs = []
 for name in os.listdir(weights_path):
     if name.endswith(".pth"):
         names.append(name)
 for name in os.listdir(indexs_path):
     if name.endswith(".index"):
-        index_paths.append(name)
+        indexs.append(name)
 
 def download_model(character):
     os.makedirs("TEMP", exist_ok=True)
@@ -71,30 +71,38 @@ def download_model(character):
             zip_ref.extractall(temp_path)
     for root, dirs, files in os.walk(temp_path):
         for file in files:
+            model_name = file.split(".")[0]
             if file.endswith(".pth"):
                 shutil.move(os.path.join(root, file), os.path.join(weights_path, file))
             elif file.endswith(".index"):
+                if model_name not in index_name:
+                    new_index_name = f"{root}/{file.split('.')[0]}_{model_name}.{file.split('.')[1]}"
+                    os.rename(os.path.join(root, file), index_name)
                 shutil.move(os.path.join(root, file), os.path.join(indexs_path, file))
         for dir in dirs:
             for root_dirs, _, files_dirs in os.walk(os.path.join(root, dir)):
                 for file_dir in files_dirs:
+                    model_name = file.split(".")[0]
                     if file_dir.endswith(".pth"):
                         shutil.move(os.path.join(root_dirs, file_dir), os.path.join(weights_path, file_dir))
                     elif file_dir.endswith(".index"):
-                        shutil.move(os.path.join(root_dirs, file_dir), os.path.join(indexs_path, file_dir))
+                        if model_name not in index_name:
+                            new_index_name = f"{root_dirs}/{file.split('.')[0]}_{model_name}.{file.split('.')[1]}"
+                            os.rename(os.path.join(root_dirs, file), index_name)
+                        shutil.move(os.path.join(root_dirs, file), os.path.join(indexs_path, file))
     shutil.rmtree(temp_path)
 
 def change_choices():
     names = []
-    index_paths = []
+    indexs = []
     for name in os.listdir(weights_path):
         if name.endswith(".pth"):
             names.append(name)
     for name in os.listdir(indexs_path):
         if name.endswith(".index"):
-            index_paths.append(name)
+            indexs.append(name)
     return { "choices": sorted(names), "__type__": "update"}, {
-        "choices": sorted(index_paths),
+        "choices": sorted(indexs),
         "__type__": "update",
     }
 
@@ -141,7 +149,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                         )
                         file_index = gr.Dropdown(
                             label="Index file dropdown",
-                            choices=sorted(index_paths),
+                            choices=sorted(indexs),
                             interactive=True,
                         )
                         f0method0 = gr.Radio(
@@ -225,7 +233,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                         )
                 sid0.change(
                     fn=vc.get_vc,
-                    inputs=[sid0, index_paths, protect0],
+                    inputs=[sid0, protect0],
                     outputs=[spk_item, protect0, file_index],
                     api_name="infer_change_voice",
                 )

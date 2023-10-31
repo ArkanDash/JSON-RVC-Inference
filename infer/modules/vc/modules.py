@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 import numpy as np
 import soundfile as sf
 import torch
+import os
 from io import BytesIO
 
 from infer.lib.audio import load_audio, wav2
@@ -33,12 +34,17 @@ class VC:
 
         self.config = config
 
-    def get_vc(self, sid, index_paths, *to_return_protect):
+    def get_vc(self, sid, *to_return_protect):
         weights_path = os.path.join("models", "weights")
-        if sid == "":
+        indexs_path = os.path.join("models", "indexs")
+        if sid != "":
             sid_path = os.path.join(weights_path, sid)
-        logger.info("Get sid: " + sid_path)
-        for index in index_paths:
+        logger.info("Get sid: " + sid)
+        indexs = []
+        for name in os.listdir(indexs_path):
+            if name.endswith(".index"):
+                indexs.append(name)
+        for index in indexs:
             if sid.split(".")[0] in index:
                 selected_index = index
 
@@ -144,7 +150,6 @@ class VC:
         rms_mix_rate,
         protect,
     ):
-        
         indexs_path = os.path.join("models", "indexs")
         if input_audio_path is None:
             return "You need to upload an audio", None
