@@ -81,9 +81,7 @@ class VC:
                     "visible": True,
                     "value": to_return_protect0,
                     "__type__": "update",
-                },
-                "",
-                "",
+                }
             )
         person = sid
         logger.info(f"Loading: {person}")
