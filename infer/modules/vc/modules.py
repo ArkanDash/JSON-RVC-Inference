@@ -34,6 +34,8 @@ class VC:
         self.config = config
 
     def get_vc(self, sid, *to_return_protect):
+        weights_path = os.path.join("models", "weights")
+        sid = os.path.join(weights_path, sid)
         logger.info("Get sid: " + sid)
 
         to_return_protect0 = {
@@ -83,7 +85,7 @@ class VC:
                 "",
                 "",
             )
-        person = f'{os.getenv("weight_root")}/{sid}'
+        person = sid
         logger.info(f"Loading: {person}")
 
         self.cpt = torch.load(person, map_location="cpu")
@@ -114,15 +116,11 @@ class VC:
 
         self.pipeline = Pipeline(self.tgt_sr, self.config)
         n_spk = self.cpt["config"][-3]
-        index = {"value": get_index_path_from_model(sid), "__type__": "update"}
-        logger.info("Select index: " + index["value"])
 
         return (
             (
                 {"visible": True, "maximum": n_spk, "__type__": "update"},
                 to_return_protect0,
-                index,
-                index,
             )
             if to_return_protect
             else {"visible": True, "maximum": n_spk, "__type__": "update"}
@@ -136,13 +134,14 @@ class VC:
         f0_file,
         f0_method,
         file_index,
-        file_index2,
         index_rate,
         filter_radius,
         resample_sr,
         rms_mix_rate,
         protect,
     ):
+        
+        indexs_path = os.path.join("models", "indexs")
         if input_audio_path is None:
             return "You need to upload an audio", None
         f0_up_key = int(f0_up_key)
@@ -156,18 +155,7 @@ class VC:
             if self.hubert_model is None:
                 self.hubert_model = load_hubert(self.config)
 
-            file_index = (
-                (
-                    file_index.strip(" ")
-                    .strip('"')
-                    .strip("\n")
-                    .strip('"')
-                    .strip(" ")
-                    .replace("trained", "added")
-                )
-                if file_index != ""
-                else file_index2
-            )  # 防止小白写错，自动帮他替换掉
+            file_index = os.path.join(indexs_path, file_index)
 
             audio_opt = self.pipeline.pipeline(
                 self.hubert_model,

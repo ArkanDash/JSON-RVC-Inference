@@ -14,6 +14,7 @@ import json
 import shutil
 import logging
 import zipfile
+import glob
 
 logging.getLogger("numba").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -50,7 +51,6 @@ for name in os.listdir(indexs_path):
 def download_model(character):
     os.makedirs("TEMP", exist_ok=True)
     temp_path = "TEMP"
-
     if "v2" in character:
         ver_2 = data["version_2"]
         for item in ver_2:
@@ -65,22 +65,25 @@ def download_model(character):
                 cover_filename = os.path.splitext(item[0])[0] + os.path.splitext(item[2])[1]
                 subprocess.run(['wget', '-P', temp_path, item[1]])
                 subprocess.run(['wget', '-O', os.path.join(covers_path, cover_filename), item[2]])
-
-    if temp_path.endswith('.zip'):
-        with zipfile.ZipFile(temp_path, 'r') as zip_ref:
+    zip_files = glob.glob(os.path.join(temp_path, '*.zip'))
+    for zip_file in zip_files:
+        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
             zip_ref.extractall(temp_path)
-
-    items_in_temp = os.listdir(temp_path)
-    if len(items_in_temp) == 1 and os.path.isdir(os.path.join(temp_path, items_in_temp[0])):
-        temp_path = os.path.join(temp_path, items_in_temp[0])
-
     for root, dirs, files in os.walk(temp_path):
         for file in files:
             if file.endswith(".pth"):
                 shutil.move(os.path.join(root, file), os.path.join(weights_path, file))
             elif file.endswith(".index"):
                 shutil.move(os.path.join(root, file), os.path.join(indexs_path, file))
-    
+        for dir in dirs:
+            for root_dirs, _, files_dirs in os.walk(os.path.join(root, dir)):
+                for file_dir in files_dirs:
+                    if file_dir.endswith(".pth"):
+                        shutil.move(os.path.join(root_dirs, file_dir), os.path.join(weights_path, file_dir))
+                    elif file_dir.endswith(".index"):
+                        shutil.move(os.path.join(root_dirs, file_dir), os.path.join(indexs_path, file_dir))
+    shutil.rmtree(temp_path)
+
 def change_choices():
     names = []
     index_paths = []
@@ -136,12 +139,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                             label="Audio Input Path",
                             placeholder="C:\\Users\\Desktop\\audio_example.wav",
                         )
-                        file_index1 = gr.Textbox(
-                            label="Index file location",
-                            placeholder="C:\\Users\\Desktop\\model_example.index",
-                            interactive=True,
-                        )
-                        file_index2 = gr.Dropdown(
+                        file_index = gr.Dropdown(
                             label="Index file dropdown",
                             choices=sorted(index_paths),
                             interactive=True,
@@ -200,7 +198,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                         refresh_button.click(
                             fn=change_choices,
                             inputs=[],
-                            outputs=[sid0, file_index2],
+                            outputs=[sid0, file_index],
                             api_name="infer_refresh",
                         )
                     with gr.Column():
@@ -215,8 +213,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                                 vc_transform0,
                                 f0_file,
                                 f0method0,
-                                file_index1,
-                                file_index2,
+                                file_index,
                                 index_rate1,
                                 filter_radius0,
                                 resample_sr0,
@@ -229,7 +226,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                 sid0.change(
                     fn=vc.get_vc,
                     inputs=[sid0, protect0],
-                    outputs=[spk_item, protect0, file_index1, file_index2],
+                    outputs=[spk_item, protect0],
                     api_name="infer_change_voice",
                 )
     if config.iscolab:
