@@ -33,10 +33,14 @@ class VC:
 
         self.config = config
 
-    def get_vc(self, sid, *to_return_protect):
+    def get_vc(self, sid, index_paths, *to_return_protect):
         weights_path = os.path.join("models", "weights")
-        sid = os.path.join(weights_path, sid)
-        logger.info("Get sid: " + sid)
+        if sid == "":
+            sid_path = os.path.join(weights_path, sid)
+        logger.info("Get sid: " + sid_path)
+        for index in index_paths:
+            if sid.split(".")[0] in index:
+                selected_index = index
 
         to_return_protect0 = {
             "visible": self.if_f0 != 0,
@@ -81,9 +85,10 @@ class VC:
                     "visible": True,
                     "value": to_return_protect0,
                     "__type__": "update",
-                }
+                },
+                ""
             )
-        person = sid
+        person = sid_path
         logger.info(f"Loading: {person}")
 
         self.cpt = torch.load(person, map_location="cpu")
@@ -119,6 +124,7 @@ class VC:
             (
                 {"visible": True, "maximum": n_spk, "__type__": "update"},
                 to_return_protect0,
+                selected_index
             )
             if to_return_protect
             else {"visible": True, "maximum": n_spk, "__type__": "update"}

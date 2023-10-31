@@ -225,8 +225,8 @@ with gr.Blocks(title="RVC WebUI") as app:
                         )
                 sid0.change(
                     fn=vc.get_vc,
-                    inputs=[sid0, protect0],
-                    outputs=[spk_item, protect0],
+                    inputs=[sid0, index_paths, protect0],
+                    outputs=[spk_item, protect0, file_index],
                     api_name="infer_change_voice",
                 )
     if config.iscolab:
