@@ -51,20 +51,12 @@ for name in os.listdir(indexs_path):
 def download_model(character):
     os.makedirs("TEMP", exist_ok=True)
     temp_path = "TEMP"
-    if "v2" in character:
-        ver_2 = data["version_2"]
-        for item in ver_2:
-            if character in item[0]:
-                cover_filename = os.path.splitext(item[0])[0] + os.path.splitext(item[2])[1]
-                subprocess.run(['wget', '-P', temp_path, item[1]])
-                subprocess.run(['wget', '-O', os.path.join(covers_path, cover_filename), item[2]])
-    else:
-        ver_1 = data["version_1"]
-        for item in ver_1:
-            if character in item[0]:
-                cover_filename = os.path.splitext(item[0])[0] + os.path.splitext(item[2])[1]
-                subprocess.run(['wget', '-P', temp_path, item[1]])
-                subprocess.run(['wget', '-O', os.path.join(covers_path, cover_filename), item[2]])
+    models = data["model_data"]
+    for item in models:
+        if character in item[1]:
+            cover_filename = os.path.splitext(item[0])[0] + os.path.splitext(item[2])[1]
+            subprocess.run(['wget', '-P', temp_path, item[2]])
+            subprocess.run(['wget', '-O', os.path.join(covers_path, cover_filename), item[3]])
     zip_files = glob.glob(os.path.join(temp_path, '*.zip'))
     for zip_file in zip_files:
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
