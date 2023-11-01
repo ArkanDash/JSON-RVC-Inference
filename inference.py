@@ -53,7 +53,7 @@ def download_model(character):
     temp_path = "TEMP"
     models = data["model_data"]
     for item in models:
-        if character in item[1]:
+        if character == item[1]:
             cover_filename = os.path.splitext(item[0])[0] + os.path.splitext(item[2])[1]
             subprocess.run(['wget', '-P', temp_path, item[2]])
             subprocess.run(['wget', '-O', os.path.join(covers_path, cover_filename), item[3]])
@@ -63,25 +63,31 @@ def download_model(character):
             zip_ref.extractall(temp_path)
     for root, dirs, files in os.walk(temp_path):
         for file in files:
-            model_name = file.split(".")[0]
             if file.endswith(".pth"):
-                shutil.move(os.path.join(root, file), os.path.join(weights_path, file))
+                weight_file = f"{character}.{file.split('.')[1]}"
+                os.rename(os.path.join(root, file), os.path.join(root, weight_file))
+                shutil.move(os.path.join(root, weight_file), os.path.join(weights_path, weight_file))
             elif file.endswith(".index"):
-                if model_name not in index_name:
-                    new_index_name = f"{root}/{file.split('.')[0]}_{model_name}.{file.split('.')[1]}"
-                    os.rename(os.path.join(root, file), index_name)
-                shutil.move(os.path.join(root, file), os.path.join(indexs_path, file))
+                if character not in file:
+                    index_file = f"{file.split('.')[0]}_{character}.{file.split('.')[1]}"
+                    os.rename(os.path.join(root, file), os.path.join(root, index_file))
+                    shutil.move(os.path.join(root, index_file), os.path.join(indexs_path, index_file))
+                else:
+                    shutil.move(os.path.join(root, file), os.path.join(indexs_path, file))
         for dir in dirs:
             for root_dirs, _, files_dirs in os.walk(os.path.join(root, dir)):
                 for file_dir in files_dirs:
-                    model_name = file.split(".")[0]
                     if file_dir.endswith(".pth"):
-                        shutil.move(os.path.join(root_dirs, file_dir), os.path.join(weights_path, file_dir))
+                        weight_file = f"{character}.{file_dir.split('.')[1]}"
+                        os.rename(os.path.join(root_dirs, file_dir), os.path.join(root_dirs, weight_file))
+                        shutil.move(os.path.join(root_dirs, weight_file), os.path.join(weights_path, weight_file))
                     elif file_dir.endswith(".index"):
-                        if model_name not in index_name:
-                            new_index_name = f"{root_dirs}/{file_dir.split('.')[0]}_{model_name}.{file_dir.split('.')[1]}"
-                            os.rename(os.path.join(root_dirs, file_dir), index_name)
-                        shutil.move(os.path.join(root_dirs, file_dir), os.path.join(indexs_path, file_dir))
+                        if character not in file_dir:
+                            index_file = f"{file_dir.split('.')[0]}_{character}.{file_dir.split('.')[1]}"
+                            os.rename(os.path.join(root_dirs, file_dir), os.path.join(root_dirs, index_file))
+                            shutil.move(os.path.join(root_dirs, index_file), os.path.join(indexs_path, index_file))
+                        else:
+                            shutil.move(os.path.join(root_dirs, file_dir), os.path.join(indexs_path, file_dir))
     shutil.rmtree(temp_path)
 
 def change_choices():

@@ -47,6 +47,8 @@ class VC:
         for index in indexs:
             if sid.split(".")[0] in index:
                 selected_index = index
+            else:
+                selected_index = ""
 
         to_return_protect0 = {
             "visible": self.if_f0 != 0,
