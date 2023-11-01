@@ -107,7 +107,7 @@ def change_choices():
 def clean():
     return {"value": "", "__type__": "update"}
 
-with gr.Blocks(title="RVC WebUI") as app:
+with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
     gr.Markdown("## RVC WebUI")
     gr.Markdown(
         value="Alpha testing."
@@ -159,6 +159,13 @@ with gr.Blocks(title="RVC WebUI") as app:
                             interactive=True,
                         )
                     with gr.Column():
+                        index_rate = gr.Slider(
+                            minimum=0,
+                            maximum=1,
+                            label="Retrieval feature ratio",
+                            value=0.75,
+                            interactive=True,
+                        )
                         resample_sr0 = gr.Slider(
                             minimum=0,
                             maximum=48000,
@@ -190,13 +197,6 @@ with gr.Blocks(title="RVC WebUI") as app:
                             step=1,
                             interactive=True,
                         )
-                        index_rate1 = gr.Slider(
-                            minimum=0,
-                            maximum=1,
-                            label="Retrieval feature ratio",
-                            value=0.75,
-                            interactive=True,
-                        )
                         f0_file = gr.File(
                             label="F0 curve file (Optional)",
                             visible=False,
@@ -220,7 +220,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                                 f0_file,
                                 f0method0,
                                 file_index,
-                                index_rate1,
+                                index_rate,
                                 filter_radius0,
                                 resample_sr0,
                                 rms_mix_rate0,
@@ -236,9 +236,9 @@ with gr.Blocks(title="RVC WebUI") as app:
                     api_name="infer_change_voice",
                 )
     if config.iscolab:
-        app.queue(concurrency_count=511, max_size=1022).launch(share=True)
+        app.queue(max_size=1022).launch(share=True)
     else:
-        app.queue(concurrency_count=511, max_size=1022).launch(
+        app.queue(max_size=1022).launch(
             server_name="0.0.0.0",
             inbrowser=not config.noautoopen,
             server_port=config.listen_port,
