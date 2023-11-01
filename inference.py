@@ -87,9 +87,9 @@ def download_model(character):
                         shutil.move(os.path.join(root_dirs, file_dir), os.path.join(weights_path, file_dir))
                     elif file_dir.endswith(".index"):
                         if model_name not in index_name:
-                            new_index_name = f"{root_dirs}/{file.split('.')[0]}_{model_name}.{file.split('.')[1]}"
-                            os.rename(os.path.join(root_dirs, file), index_name)
-                        shutil.move(os.path.join(root_dirs, file), os.path.join(indexs_path, file))
+                            new_index_name = f"{root_dirs}/{file_dir.split('.')[0]}_{model_name}.{file_dir.split('.')[1]}"
+                            os.rename(os.path.join(root_dirs, file_dir), index_name)
+                        shutil.move(os.path.join(root_dirs, file_dir), os.path.join(indexs_path, file_dir))
     shutil.rmtree(temp_path)
 
 def change_choices():
