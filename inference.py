@@ -1,10 +1,7 @@
 import os
 import sys
-from dotenv import load_dotenv
-
 now_dir = os.getcwd()
 sys.path.append(now_dir)
-load_dotenv()
 from infer.modules.vc.modules import VC
 from configs.config import Config
 import numpy as np
