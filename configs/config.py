@@ -56,6 +56,7 @@ class Config:
             self.noparallel,
             self.noautoopen,
             self.dml,
+            self.force_support,
         ) = self.arg_parse()
         self.instead = ""
         self.x_pad, self.x_query, self.x_center, self.x_max = self.device_config()
@@ -75,6 +76,7 @@ class Config:
         parser.add_argument("--port", type=int, default=7865, help="Listen port")
         parser.add_argument("--pycmd", type=str, default=exe, help="Python command")
         parser.add_argument("--colab", action="store_true", help="Launch in colab")
+        parser.add_argument("--force_support", action="store_true", help="Force unsupported feature such as crepe")
         parser.add_argument(
             "--noparallel", action="store_true", help="Disable parallel processing"
         )
@@ -99,6 +101,7 @@ class Config:
             cmd_opts.noparallel,
             cmd_opts.noautoopen,
             cmd_opts.dml,
+            cmd_opts.force_support,
         )
 
     # has_mps is only available in nightly pytorch (for now) and MasOS 12.3+.

@@ -4,6 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import numpy as np
+import gradio as gr
 import soundfile as sf
 import torch
 import os
@@ -142,8 +143,10 @@ class VC:
         self,
         sid,
         input_audio_path,
+        upload_audio,
+        tts_text,
+        tts_voice,
         f0_up_key,
-        f0_file,
         f0_method,
         file_index,
         index_rate,
@@ -153,21 +156,35 @@ class VC:
         protect,
     ):
         indexs_path = os.path.join("models", "indexs")
-        if input_audio_path is None:
-            return "You need to upload an audio", None
-        f0_up_key = int(f0_up_key)
-        try:
+        if vc_audio_mode == "Input path" or "Youtube" and input_audio_path != "":
             audio = load_audio(input_audio_path, 16000)
             audio_max = np.abs(audio).max() / 0.95
             if audio_max > 1:
                 audio /= audio_max
+        elif vc_audio_mode == "Upload audio":
+            if not upload_audio:
+                gr.Error("You need to upload an audio")
+                return "You need to upload an audio", None
+            sampling_rate, audio = upload_audio
+            duration = audio.shape[0] / sampling_rate
+            audio = (audio / np.iinfo(audio.dtype).max).astype(np.float32)
+            if len(audio.shape) > 1:
+                audio = librosa.to_mono(audio.transpose(1, 0))
+            if sampling_rate != 16000:
+                audio = librosa.resample(audio, orig_sr=sampling_rate, target_sr=16000)
+        elif vc_audio_mode == "TTS Audio":
+            if tts_text is None or tts_voice is None:
+                gr.Error("You need to enter text and select a voice")
+                return "You need to enter text and select a voice", None
+            asyncio.run(edge_tts.Communicate(tts_text, "-".join(tts_voice.split('-')[:-1])).save("tts.mp3"))
+            audio, sr = librosa.load("tts.mp3", sr=16000, mono=True)
+            input_audio_path = "tts.mp3"
+        f0_up_key = int(f0_up_key)
+        try:
             times = [0, 0, 0]
-
             if self.hubert_model is None:
                 self.hubert_model = load_hubert(self.config)
-
             file_index = os.path.join(indexs_path, file_index)
-
             audio_opt = self.pipeline.pipeline(
                 self.hubert_model,
                 self.net_g,
@@ -197,6 +214,7 @@ class VC:
                 if os.path.exists(file_index)
                 else "Index not used."
             )
+            gr.Info("Completed!")
             return (
                 "Success.\n%s\nTime:\nnpy: %.2fs, f0: %.2fs, infer: %.2fs."
                 % (index_info, *times),
