@@ -13,7 +13,6 @@ soundfile>=0.12.1
 praat-parselmouth>=0.4.2
 httpx
 python-dotenv>=1.0.0
-fastapi==0.88
 tensorboard
 tensorboardX
 torchcrepe
