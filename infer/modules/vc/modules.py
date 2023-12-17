@@ -142,6 +142,7 @@ class VC:
     def vc_single(
         self,
         sid,
+        vc_audio_mode,
         input_audio_path,
         upload_audio,
         tts_text,

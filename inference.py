@@ -141,11 +141,10 @@ with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
                 downloadModel = gr.Button("Download Model", variant="primary")
                 downloadModel.click(fn=download_model, inputs=[modelSelect], outputs=[])
             with gr.Row():
-                sid0 = gr.Dropdown(label="Selected Model", choices=sorted(names), allow_custom_value=False)
+                sid0 = gr.Dropdown(label="Selected Model", choices=sorted(names))
                 file_index = gr.Dropdown(
                     label="Index file dropdown",
                     choices=sorted(indexs),
-                    allow_custom_value=False,
                     interactive=True,
                 )
                 spk_item = gr.Slider(
@@ -164,7 +163,7 @@ with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
             with gr.TabItem("Inference Setting"):
                 with gr.Row():
                     with gr.Column():
-                        vc_audio_mode = gr.Dropdown(label="Input voice", choices=audio_mode, allow_custom_value=False, value="Upload audio", visible=True, interactive=True)
+                        vc_audio_mode = gr.Dropdown(label="Input voice", choices=audio_mode, value="Upload audio", visible=True, interactive=True)
                         # Upload Audio
                         vc_upload = gr.Audio(label="Upload audio file", sources="upload", visible=True, interactive=True)
                         vc_microphone_mode = gr.Checkbox(label="Use Microphone", value=False, visible=True, interactive=True)
@@ -272,6 +271,7 @@ with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
             vc.vc_single,
             [
                 spk_item,
+                vc_audio_mode,
                 vc_audio_input,
                 vc_upload,
                 vc_tts_text,
