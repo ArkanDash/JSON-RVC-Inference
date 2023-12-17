@@ -157,6 +157,7 @@ class VC:
         protect,
     ):
         indexs_path = os.path.join("models", "indexs")
+        audio = None
         if vc_audio_mode == "Input path" or "Youtube" and input_audio_path != "":
             audio = load_audio(input_audio_path, 16000)
             audio_max = np.abs(audio).max() / 0.95
@@ -180,6 +181,7 @@ class VC:
             asyncio.run(edge_tts.Communicate(tts_text, "-".join(tts_voice.split('-')[:-1])).save("tts.mp3"))
             audio, sr = librosa.load("tts.mp3", sr=16000, mono=True)
             input_audio_path = "tts.mp3"
+        f0_file = None
         f0_up_key = int(f0_up_key)
         try:
             times = [0, 0, 0]

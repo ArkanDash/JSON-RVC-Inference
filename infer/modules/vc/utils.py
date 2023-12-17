@@ -42,7 +42,7 @@ async def download_and_split_audio(url, model):
     print(result.stdout)
     vocal = f"output/{model}/audio/vocals.wav"
     inst = f"output/{model}/audio/no_vocals.wav"
-    return vocal, result
+    return vocal, result.stdout
 
 async def combine_audio(model):
     vocal = f"output/{model}/audio/vocals.wav"
@@ -56,4 +56,4 @@ async def combine_audio(model):
     command = f"ffmpeg -i {inst} -i {vocal} -filter_complex amix=inputs=2:duration=longest -vn {output_path}"
     result = subprocess.run(command.split(), stdout=subprocess.PIPE, text=True)
     print(result.stdout)
-    return output_path, result
+    return output_path, result.stdout

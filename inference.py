@@ -79,8 +79,8 @@ def download_model(character):
     for item in models:
         if character == item[1]:
             cover_filename = os.path.splitext(item[0])[0] + os.path.splitext(item[2])[1]
-            subprocess.run(['wget', '-P', temp_path, item[2]])
-            subprocess.run(['wget', '-O', os.path.join(covers_path, cover_filename), item[3]])
+            log1 = subprocess.run(['wget', '-P', temp_path, item[2]])
+            log2 = subprocess.run(['wget', '-O', os.path.join(covers_path, cover_filename), item[3]])
     zip_files = glob.glob(os.path.join(temp_path, '*.zip'))
     for zip_file in zip_files:
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
