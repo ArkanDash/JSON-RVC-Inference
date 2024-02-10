@@ -2,6 +2,7 @@ import os
 import ffmpeg
 import subprocess
 import random
+import gradio as gr
 
 from fairseq import checkpoint_utils
 from pytube import YouTube
@@ -36,18 +37,18 @@ def load_hubert(config):
 
 async def download_and_split_audio(url, model):
     audio = YouTube(url).streams.get_audio_only()
-    audio.download(filename="audio.wav", output_path="output/yt",skip_existing=False)
+    audio.download(filename="audio.wav", output_path="output/yt", skip_existing=False)
     command = f"demucs --two-stems=vocals -n {model} output/yt/audio.wav -o output"
     result = subprocess.run(command.split(), stdout=subprocess.PIPE, text=True)
     print(result.stdout)
     vocal = f"output/{model}/audio/vocals.wav"
     inst = f"output/{model}/audio/no_vocals.wav"
-    return vocal, result.stdout
+    gr.Info("Successfully download and split the audio!")
+    return vocal, vocal, result.stdout
 
-async def combine_audio(model):
-    vocal = f"output/{model}/audio/vocals.wav"
+async def combine_audio(model, vocal):
     inst = f"output/{model}/audio/no_vocals.wav"
-    os.mkdir(os.path.join("output", "combined"))
+    os.makedirs(os.path.join("output", "combined"), exist_ok=True)
     random_number = random.randint(0, 1000000)
     output_path = os.path.join("output", "combined", f"combined_{random_number}.wav")
     while output_path in os.listdir(os.path.join("output", "combined")):
@@ -56,4 +57,5 @@ async def combine_audio(model):
     command = f"ffmpeg -i {inst} -i {vocal} -filter_complex amix=inputs=2:duration=longest -vn {output_path}"
     result = subprocess.run(command.split(), stdout=subprocess.PIPE, text=True)
     print(result.stdout)
+    gr.Info("Successfully combine the audio!")
     return output_path, result.stdout

@@ -7,6 +7,7 @@ import numpy as np
 import gradio as gr
 import soundfile as sf
 import torch
+import librosa
 import os
 from io import BytesIO
 
@@ -154,7 +155,7 @@ class VC:
         filter_radius,
         resample_sr,
         rms_mix_rate,
-        protect,
+        protect
     ):
         indexs_path = os.path.join("models", "indexs")
         audio = None
@@ -217,16 +218,25 @@ class VC:
                 if os.path.exists(file_index)
                 else "Index not used."
             )
-            gr.Info("Completed!")
+            os.makedirs(os.path.join("output", "vc"), exist_ok=True)
+            random_number = random.randint(0, 1000000)
+            output_path = os.path.join("output", "vc", f"vc_audio_{random_number}.wav")
+            while output_path in os.listdir(os.path.join("output", "vc")):
+                random_number = random.randint(0, 1000000)
+                output_path = os.path.join("output", "vc", f"vc_audio_{random_number}.wav")
+            sf.write(output_path, audio_opt, tgt_sr)
+            gr.Info(f"Successfully convert the audio!")
             return (
                 "Success.\n%s\nTime:\nnpy: %.2fs, f0: %.2fs, infer: %.2fs."
                 % (index_info, *times),
                 (tgt_sr, audio_opt),
+                gr.Textbox(value=output_path)
             )
         except:
             info = traceback.format_exc()
             logger.warning(info)
-            return info, (None, None)
+            gr.Error(info)
+            return info, (None, None), None
 
     def vc_multi(
         self,

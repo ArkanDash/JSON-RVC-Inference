@@ -4,7 +4,7 @@ now_dir = os.getcwd()
 sys.path.append(now_dir)
 from infer.modules.vc.modules import VC
 from infer.modules.vc.utils import download_and_split_audio, combine_audio
-from infer.lib.setting import change_audio_mode, show_description, use_microphone
+from infer.lib.setting import change_audio_mode, show_description
 from configs.config import Config
 import numpy as np
 import gradio as gr
@@ -26,6 +26,8 @@ tts_voice_list = asyncio.new_event_loop().run_until_complete(edge_tts.list_voice
 tts_voices = [f"{v['ShortName']}-{v['Gender']}" for v in tts_voice_list]
 
 os.makedirs("models", exist_ok=True)
+os.makedirs(os.path.join("assets", "hubert"), exist_ok=True)
+os.makedirs(os.path.join("assets", "rvmpe"), exist_ok=True)
 os.makedirs(os.path.join("models", "weights"), exist_ok=True)
 os.makedirs(os.path.join("models", "indexs"), exist_ok=True)
 os.makedirs(os.path.join("models", "covers"), exist_ok=True)
@@ -40,8 +42,8 @@ if config.force_support is False:
     if config.device == "mps" or config.device == "cpu":
         force_support = False
 else:
-    print("\033[93mWARNING: Unsupported feature is enabled.\033[0m")
-    print("\033[93mWARNING: It may not work properly.\033[0m")
+    logger.info("\033[93mWARNING: Unsupported feature is enabled.\033[0m")
+    logger.info("\033[93mWARNING: It may not work properly.\033[0m")
     force_support = True
 
 audio_mode = []
@@ -165,8 +167,7 @@ with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
                     with gr.Column():
                         vc_audio_mode = gr.Dropdown(label="Input voice", choices=audio_mode, value="Upload audio", visible=True, interactive=True)
                         # Upload Audio
-                        vc_upload = gr.Audio(label="Upload audio file", sources="upload", visible=True, interactive=True)
-                        vc_microphone_mode = gr.Checkbox(label="Use Microphone", value=False, visible=True, interactive=True)
+                        vc_upload = gr.Audio(label="Upload audio file", sources=["upload", "microphone"], visible=True, interactive=True)
                         # Audio Path
                         vc_audio_input = gr.Textbox(label="Audio Input Path", placeholder="C:\\Users\\Desktop\\audio_example.wav", visible=False, interactive=True)
                         # Youtube Audio
@@ -177,13 +178,15 @@ with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
                         # TTS Audio
                         vc_tts_text = gr.Textbox(label="TTS text", placeholder="Hello world", visible=False, interactive=True)
                         vc_tts_voice = gr.Dropdown(label="Edge-tts speaker", choices=tts_voices, visible=False, allow_custom_value=False, value="en-US-AnaNeural-Female", interactive=True)
+                        # Exported Audio Path
+                        vc_inst_input = gr.Textbox(label="Inst Input", value="", visible=False)
                     with gr.Column():
                         f0method0 = gr.Radio(
                             label="Pitch extraction algorithm",
                             choices=f0method_mode
                             if config.dml == False
                             else ["pm", "harvest", "rmvpe"],
-                            value="rmvpe",
+                            value="pm",
                             interactive=True,
                         )
                         vc_transform0 = gr.Slider(
@@ -198,7 +201,7 @@ with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
                             minimum=0,
                             maximum=1,
                             label="Retrieval feature ratio",
-                            value=0.75,
+                            value=0.6,
                             interactive=True,
                         )
                         resample_sr0 = gr.Slider(
@@ -213,14 +216,14 @@ with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
                             minimum=0,
                             maximum=1,
                             label="Volume Envelope",
-                            value=0.25,
+                            value=0,
                             interactive=True,
                         )
                         protect0 = gr.Slider(
                             minimum=0,
                             maximum=0.5,
                             label="Voice Protection",
-                            value=0.33,
+                            value=0.5,
                             step=0.01,
                             interactive=True,
                         )
@@ -228,7 +231,7 @@ with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
                             minimum=0,
                             maximum=7,
                             label="Apply Median Filtering",
-                            value=3,
+                            value=2,
                             step=1,
                             interactive=True,
                         )
@@ -245,7 +248,7 @@ with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
                         vc_combined_output = gr.Audio(label="Combined Audio")
         with gr.TabItem("Log"):
             gr.Markdown("## Log")
-            vc_log = gr.Textbox(label="Output Log")
+            vc_log = gr.Textbox(label="Output Log", max_lines=40, lines=40)
         with gr.TabItem("Settings"):
             gr.Markdown("## Setting")
             description_mode = gr.Checkbox(label="Show description", value=False)
@@ -283,9 +286,9 @@ with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
                 filter_radius0,
                 resample_sr0,
                 rms_mix_rate0,
-                protect0,
+                protect0
             ],
-            [vc_log, vc_output],
+            [vc_log, vc_output, vc_inst_input],
             api_name="infer_convert",
         )
         sid0.change(
@@ -294,19 +297,14 @@ with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
             outputs=[spk_item, protect0, file_index],
             api_name="infer_change_voice",
         )
-        vc_microphone_mode.change(
-            fn=use_microphone,
-            inputs=vc_microphone_mode,
-            outputs=vc_upload
-        )
         vc_download_button.click(
             fn=download_and_split_audio,
             inputs=[vc_link, vc_split_model],
-            outputs=[vc_vocal_preview, vc_log]
+            outputs=[vc_vocal_preview, vc_audio_input, vc_log]
         )
         vc_combined.click(
             fn=combine_audio,
-            inputs=[vc_split_model],
+            inputs=[vc_split_model, vc_inst_input],
             outputs=[vc_combined_output, vc_log]
         )
         vc_audio_mode.change(
@@ -314,7 +312,6 @@ with gr.Blocks(title="RVC WebUI", theme=gr.themes.Base()) as app:
             inputs=[vc_audio_mode],
             outputs=[
                 vc_upload,
-                vc_microphone_mode,
                 vc_audio_input,
                 vc_link,
                 vc_split_model,

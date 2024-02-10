@@ -5,7 +5,6 @@ def change_audio_mode(vc_audio_mode):
         return (
             # Upload Audio
             gr.Audio(visible=True),
-            gr.Checkbox(visible=True),
             # Audio Path
             gr.Textbox(visible=False),
             # Youtube Audio
@@ -24,7 +23,6 @@ def change_audio_mode(vc_audio_mode):
         return (
             # Upload Audio
             gr.Audio(visible=False),
-            gr.Checkbox(visible=False),
             # Audio Path
             gr.Textbox(visible=True),
             # Youtube Audio
@@ -43,7 +41,6 @@ def change_audio_mode(vc_audio_mode):
         return (
             # Upload Audio
             gr.Audio(visible=False),
-            gr.Checkbox(visible=False),
             # Audio Path
             gr.Textbox(visible=False),
             # Youtube Audio
@@ -62,7 +59,6 @@ def change_audio_mode(vc_audio_mode):
         return (
             # Upload Audio
             gr.Audio(visible=False),
-            gr.Checkbox(visible=False),
             # Audio Path
             gr.Textbox(visible=False),
             # Youtube Audio
@@ -92,7 +88,7 @@ def show_description(isTrue):
             # Converter Settings
             gr.Radio(info="PM is fast, Harvest is good but extremely slow, Rvmpe is alternative to harvest (might be better), and Crepe effect is good but requires GPU (Default: PM)"),
             gr.Slider(info="Number of semitone to shift pitch (Use 0 for no effect)"),
-            gr.Slider(info="Ratio between original voice and model voice (Default: 0.7)"),
+            gr.Slider(info="Ratio between original voice and model voice (Default: 0.6)"),
             gr.Slider(info="Resample the output audio in post-processing to the final sample rate. (Set to 0 for no resampling)"),
             gr.Slider(info="Use the volume envelope of the input to replace or mix with the volume envelope of the output. The closer the ratio is to 1, the more the output envelope is used."),
             gr.Slider(info="Protect voiceless consonants and breath sounds to prevent artifacts such as tearing in electronic music. Decrease the value to increase protection, but it may reduce indexing accuracy. (Set to 0.5 to disable)"),
@@ -117,9 +113,3 @@ def show_description(isTrue):
             gr.Slider(info=""),
             gr.Slider(info=""),
         )
-
-def use_microphone(microphone):
-    if microphone == True:
-        return gr.Audio(sources="microphone")
-    else:
-        return gr.Audio(sources="upload")
